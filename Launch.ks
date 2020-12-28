@@ -7,7 +7,7 @@
 // Takes parameters for desired 
 // inclination (-180 to 180] (negative
 // is south), & apoapsis (in km),
-// & flightAt (inverted 'i' or not).
+// & flight attitude (inverted 'i', or not).
 // Executes primary ignition and launch.
 // Will pitch over in appropriate heading
 // to achieve desired inclination.
