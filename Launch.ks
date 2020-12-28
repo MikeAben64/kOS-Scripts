@@ -1,12 +1,13 @@
 // Launch Script 
 
 // @author: Mike Aben (2020)
-// @param: inclination, apoapsis
+// @param: inclination, apoapsis, flightAt
 
 // DESCRIPTION:
 // Takes parameters for desired 
 // inclination (-180 to 180] (negative
-// is south), & apoapsis (in km).
+// is south), & apoapsis (in km),
+// & flightAt (inverted 'i' or not).
 // Executes primary ignition and launch.
 // Will pitch over in appropriate heading
 // to achieve desired inclination.
@@ -16,6 +17,7 @@
    // parameters
 PARAMETER desiredInclination.
 PARAMETER desiredApoapsis.	
+PARAMETER flightAt.
 
    // Desired altitude to begin pitching maneuver.
 SET pitchStartingAlt to 250. 
@@ -81,7 +83,12 @@ FUNCTION myPitch {
 
    // Roll setting
 FUNCTION myRoll {
-   RETURN 360 - myHeading.
+   IF (flightAt = "i") {
+      SET tempRoll to 270 - myHeading.
+   } ELSE {
+      SET tempRoll to 360 - myHeading.
+   }
+   RETURN tempRoll.
 }
 
    //Heading setting
@@ -114,7 +121,7 @@ FUNCTION countdown {
    WAIT 1. 
    PRINT "3".
    WAIT 0.5.
-   LOCK STEERING to UP + R(0, 0, 180).
+   LOCK STEERING to UP + R(0, 0, myRoll()-90).
    PRINT "Locking attitude control.".
    WAIT 0.5. 
    PRINT "2".

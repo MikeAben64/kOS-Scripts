@@ -1,4 +1,4 @@
-# kOS-Scripts# kOS-Scripts
+# kOS-Scripts
 
 kOS scripts from my Let's Play series. 
 
