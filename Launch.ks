@@ -1,6 +1,6 @@
 // Launch Script 
 
-// @author: Mike Aben (2020)
+// @author: Mike Aben (2021)
 // @param: inclination, apoapsis, flightAt
 
 // DESCRIPTION:
@@ -28,17 +28,21 @@ SET fairingAlt to 50000.
    // Desired altitude to lock to orbital prograde.
 SET lockAlt to 40000.
    // Desired altitude for thrust to limit.
-SET tLimitAlt to 25000.
+SET tLimitAlt to 20000.
+   // Current thrust setting.
+SET thrustSetting to 1.
    // Thrust limiter.
 SET thrustLimiter to 1.
    // Upper Atmo TWR
-SET thrustAdj to 0.9.
+SET thrustAdj to 1.1.
    // Are deployables deployed?
 SET deployed to FALSE.
    // Is vessel locked to orbital prograde?
 SET proLocked to FALSE.
    // Is throttle limitted?
 SET thrustLimited to FALSE.
+   // Is upper stage thrust limited?
+SET upperLimited TO FALSE.
    // Is abort called?
 SET aborted to FALSE.
    // Are fairings staged?
@@ -174,16 +178,24 @@ FUNCTION lockToPrograde {
    SET proLocked to TRUE.
 }
 
+   //Returns ship TWR
+FUNCTION shipTWR {
+   RETURN AVAILABLETHRUST*thrustSetting / (MASS*CONSTANT:g0).
+}
+
    //LIMITS TWR to thrustAdj Setting
 FUNCTION limitThrust {
       //force of gravity on vessel
    LOCK Fg to (BODY:MU/(BODY:RADIUS+ALTITUDE)^2)*MASS.
       //locks thrust
    IF (AVAILABLETHRUST > 0) {
-      LOCK thrustSetting to thrustAdj*Fg / (AVAILABLETHRUST+0.001).
+      SET thrustSetting to thrustAdj*Fg / (AVAILABLETHRUST+0.001).
       LOCK THROTTLE to thrustSetting.
       PRINT " ".
-      PRINT "Limiting TWR to " + thrustAdj.
+      PRINT "Adjusting TWR to " + thrustAdj.
+      IF thrustLimited {
+         SET upperLimited to TRUE.
+      }
       SET thrustLimited to TRUE.
    } ELSE {
       LOCK THROTTLE to 0.
@@ -214,6 +226,9 @@ FUNCTION gravityTurn {.
          lockToPrograde().
       }
       IF (ALTITUDE > tLimitAlt) AND NOT thrustLimited {
+         limitThrust().
+      }
+      IF (shipTWR() < thrustAdj - 0.1) AND thrustLimited AND NOT upperLimited {
          limitThrust().
       }
       IF (ALTITUDE > deployAlt) AND NOT deployed {
