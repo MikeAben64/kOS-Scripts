@@ -14,27 +14,39 @@
 // Cuts throttle when desired apoapsis
 // is reached and circularizes at apoapsis.
 
-   // parameters
+// ***Parameters***
+   // desired inclination for final orbit
 PARAMETER desiredInclination.
+   // desired altitude of final orbit
 PARAMETER desiredApoapsis.	
+   // inverted ascent? ('i' for inverted)
 PARAMETER flightAt.
 
+//*************************
+//*** ASCENT PARAMETERS ***
+//*************************
    // Desired altitude to begin pitching maneuver.
 SET pitchStartingAlt to 250. 
-   // Desired altitude to extend deployables.
-SET deployAlt to 70000.
-   // Desired altitude to stage fairings.
-SET fairingAlt to 50000.
-   // Desired altitude to lock to orbital prograde.
-SET lockAlt to 40000.
+   // Altitude at which pitch will be 45 degrees.
+SET halfPitchedAlt to 12000.
    // Desired altitude for thrust to limit.
 SET tLimitAlt to 20000.
+   // TWR at above altitude
+SET thrustAdj to 1.1.
+   // TWR for final stage of ascent
+SET finalThrustAdj to 0.9.
+   // Desired altitude to lock to orbital prograde.
+SET lockAlt to 40000.
+   // Desired altitude to stage fairings.
+SET fairingAlt to 50000.
+   // Desired altitude to extend deployables.
+SET deployAlt to 70000.
+//*************************
+
    // Current thrust setting.
 SET thrustSetting to 1.
    // Thrust limiter.
 SET thrustLimiter to 1.
-   // Upper Atmo TWR
-SET thrustAdj to 1.1.
    // Are deployables deployed?
 SET deployed to FALSE.
    // Is vessel locked to orbital prograde?
@@ -78,11 +90,7 @@ FUNCTION main {
 
    // Pitch setting
 FUNCTION myPitch {
-   SET halfPitchedAlt to 10000.
-   SET downRangeDis to 900000.
-   // RETURN ARCTAN(((desiredApoapsis*1000)^2/downRangeDis)*SQRT(1/ALTITUDE^2 - 1/(desiredApoapsis*1000)^2)).
    RETURN 90*halfPitchedAlt / (ALTITUDE + halfPitchedAlt).
-   // RETURN (54021666.2 - ALTITUDE)/sqrt(2918700708000000-(ALTITUDE - 54021666.2)^2).
 }
 
    // Roll setting
@@ -189,10 +197,15 @@ FUNCTION limitThrust {
    LOCK Fg to (BODY:MU/(BODY:RADIUS+ALTITUDE)^2)*MASS.
       //locks thrust
    IF (AVAILABLETHRUST > 0) {
-      SET thrustSetting to thrustAdj*Fg / (AVAILABLETHRUST+0.001).
+      IF NOT thrustLimited {
+         SET thrustSetting to thrustAdj*Fg / (AVAILABLETHRUST+0.001).
+         PRINT " ".
+         PRINT "Adjusting TWR to " + thrustAdj.
+      } ELSE {
+         SET thrustSetting to finalThrustAdj*Fg / (AVAILABLETHRUST+0.001).
+         PRINT "Adjusting TWR to " + finalThrustAdj.
+      }
       LOCK THROTTLE to thrustSetting.
-      PRINT " ".
-      PRINT "Adjusting TWR to " + thrustAdj.
       IF thrustLimited {
          SET upperLimited to TRUE.
       }
