@@ -70,6 +70,10 @@ SET voiceTakeOffNote to NOTE(720, 0.5).
 
 //**********************************
 
+SET voice to getVoice(0).
+SET voiceTickNote to NOTE(480, 0.1).
+SET voiceTakeOffNote to NOTE(720, 0.5).
+
 main().
 
    // Main program
