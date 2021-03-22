@@ -3,15 +3,17 @@
 // into the vessel's drive, then switch the
 // volume to archive.
 
-CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
+IF (STATUS = "PRELAUNCH") {
+   CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
 
-COPYPATH("0:/xman", "").
-COPYPATH("0:/circat", "").
-SWITCH TO 0.
+   COPYPATH("0:/xman", "").
+   COPYPATH("0:/circat", "").
+   SWITCH TO 0.
 
-PRINT("Software copied to vessel.").
-PRINT("Volume switched to archive.").
-
+   PRINT("Software copied to vessel.").
+   PRINT("Volume switched to archive.").
+   PRINT STATUS.
+}
 //flight recorder
 //SET startingAlt TO SHIP:ALTITUDE.
 //SET logFile TO "0:/logs/FlightLog-Y" + TIME:YEAR + "-D" + TIME:DAY + "-" + TIME:HOUR + "-" + TIME:MINUTE + ".csv".
