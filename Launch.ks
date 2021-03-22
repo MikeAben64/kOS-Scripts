@@ -64,9 +64,9 @@ SET vPitch to 90.
    // Holds vessel's current heading
 SET vHeading to 0.
 
-main().
-
 //**********************************
+
+main().
 
    // Main program
 FUNCTION main {
@@ -133,30 +133,30 @@ FUNCTION countdown {
    WAIT 1. 
    PRINT "3".
    WAIT 0.5.
-   LOCK STEERING to UP + R(0, 0, myRoll()-90).
+   LOCK STEERING to UP + R(0, 0, 180).
    PRINT "Locking attitude control.".
    WAIT 0.5. 
    PRINT "2".
    WAIT 0.5. 
    LOCK THROTTLE to 1.
-   PRINT "Throttle to full.".
    WAIT 0.5.
+   PRINT "Throttle to full.".
    PRINT "1".
-   WAIT 1. 
+   PRINT "IGNITION".
    STAGE.
-   PRINT "LAUNCH!".
-   WAIT 0.1.
-   SET currentStage to STAGE:NUMBER.
-   SET possibleThrust to 0.
-   LIST ENGINES in engineList.
-   FOR eng IN engineList {
-      IF eng:STAGE = currentStage {
-         SET possibleThrust to possibleThrust + eng:POSSIBLETHRUST.
-      }
-   }
-   IF (AVAILABLETHRUST < (0.9*possibleThrust)) AND NOT aborted {
-      autoAbort().
-   }   
+         // checking for subnominal thrust
+   IF (SHIP:AVAILABLETHRUSTAT(1.0) < 1.15*(MASS-clampMass())*CONSTANT:g0) {
+      PRINT " ".
+      PRINT "Subnominal Thrust Detected.".
+      PRINT "Attempting Shutdown.".
+      LOCK THROTTLE to 0.
+         // proceed with launch
+   } ELSE {
+      WAIT 1. 
+      STAGE.
+      PRINT "LAUNCH!".
+      WAIT 0.1.
+   }  
    WAIT 2.
 }
 
@@ -211,9 +211,11 @@ FUNCTION limitThrust {
       }
       SET thrustLimited to TRUE.
    } ELSE {
-      LOCK THROTTLE to 0.
-      PRINT " ".
-      PRINT "1202 ALARM".
+      //LOCK THROTTLE to 0.
+      //PRINT " ".
+      //PRINT "1202 ALARM".
+      STAGE.
+      WAIT 0.1.
    }
 }
 
@@ -326,6 +328,18 @@ FUNCTION setAbortTrigger {
    }
 }
 
+   //Returns mass of launch clamps
+FUNCTION clampMass {
+   LIST PARTS IN partList.    //LIST of parts on vessel
+   SET cMass to 0.
+   FOR part IN partList {     //checks if part is a launch clamp
+      IF (part:NAME = "launchClamp1") {
+		     SET cMass to cMass + part:MASS.
+		}
+      PRINT "Clamp Mass:" + cMass.
+      RETURN cMass.
+   }   
+}
    // creates node at apoapsis to circularize
 FUNCTION circNode {
    WAIT UNTIL (ALTITUDE > 70000).
