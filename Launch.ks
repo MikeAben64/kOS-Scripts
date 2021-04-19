@@ -14,6 +14,9 @@
 // Cuts throttle when desired apoapsis
 // is reached and circularizes at apoapsis.
 
+// This script will not stage during ascent.
+// Use the Smart Part mod for this.
+
 // ***Parameters***
    // desired inclination for final orbit
 PARAMETER desiredInclination.
@@ -69,10 +72,6 @@ SET voiceTickNote to NOTE(480, 0.1).
 SET voiceTakeOffNote to NOTE(720, 0.5).
 
 //**********************************
-
-SET voice to getVoice(0).
-SET voiceTickNote to NOTE(480, 0.1).
-SET voiceTakeOffNote to NOTE(720, 0.5).
 
 main().
 
@@ -343,6 +342,7 @@ FUNCTION setAbortTrigger {
 }
 
    //Returns mass of launch clamps
+   //***THIS METHOD ALWAYS RETURNS ZERO***
 FUNCTION clampMass {
    LIST PARTS IN partList.    //LIST of parts on vessel
    SET cMass to 0.
@@ -350,7 +350,6 @@ FUNCTION clampMass {
       IF (part:NAME = "launchClamp1") {
 		     SET cMass to cMass + part:MASS.
 		}
-      PRINT "Clamp Mass:" + cMass.
       RETURN cMass.
    }   
 }
