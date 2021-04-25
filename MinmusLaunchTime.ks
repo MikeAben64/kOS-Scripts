@@ -1,14 +1,10 @@
 // Calculates Launch Time
 
-// @author: Mike Aben (2020)
-// @param: ejection angle
+// @author: Mike Aben (2021)
 
 // DESCRIPTION:
 // Calculates Launch Time for 
-// Interplanetary parking orbits
-
-   // parameters
-PARAMETER ejection.
+// going to Minmus
 
 main().
 
@@ -20,7 +16,7 @@ FUNCTION main {
 }
 
 FUNCTION launchTime {
-   SET rawTime to 163 - ejection.
+   SET rawTime to 61 - 360*((TIME:DAY-1) / 426).
    IF (rawTime < 0) {
       SET rawTime to rawTime + 360.
    }
