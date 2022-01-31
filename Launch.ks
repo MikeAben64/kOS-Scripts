@@ -350,8 +350,8 @@ FUNCTION clampMass {
       IF (part:NAME = "launchClamp1") {
 		     SET cMass to cMass + part:MASS.
 		}
-      RETURN cMass.
-   }   
+   }
+   RETURN cMass.  
 }
    // creates node at apoapsis to circularize
 FUNCTION circNode {
