@@ -9,8 +9,34 @@ SET proLocked to FALSE.
 // GLOBAL FUNCTIONS
 // *****************************************
 
+   //Countdown for unguided sounding rockets
+GLOBAL FUNCTION simpleCountdown {
+
+   
+   PRINT "5".
+   voice:PLAY(voiceTickNote).
+   WAIT 1. 
+   PRINT "4".
+   voice:PLAY(voiceTickNote).
+   WAIT 1. 
+   PRINT "3".
+   voice:PLAY(voiceTickNote).
+   WAIT 1.
+   PRINT "2".
+   voice:PLAY(voiceTickNote).
+   WAIT 1. 
+   PRINT "1".
+   voice:PLAY(voiceTickNote).
+   WAIT 1. 
+   PRINT "LAUNCH!".
+   voice:PLAY(voiceTakeOffNote).  
+   STAGE.
+   WAIT 0.
+}
+
 GLOBAL FUNCTION countdown {
    PARAMETER mechJeb IS TRUE.
+   PARAMETER spoolUp IS 2.5.
    
    SAS OFF.
    PRINT "5".
@@ -35,10 +61,9 @@ GLOBAL FUNCTION countdown {
    WAIT 0.5.
    PRINT "1".
    voice:PLAY(voiceTickNote).
-   PRINT "IGNITION".
-   WAIT 1. 
+   PRINT "IGNITION". 
    STAGE.
-   WAIT 2.5.
+   WAIT spoolUp.
    PRINT "LAUNCH!".
    voice:PLAY(voiceTakeOffNote).  
    STAGE.
@@ -76,7 +101,8 @@ GLOBAL FUNCTION gravityTurn {
 
    //Staging Aerobee Rocket
 GLOBAL FUNCTION autoStage {
-   WAIT UNTIL (SHIP:AVAILABLETHRUST < 0.1).
+   PARAMETER cutOffTWR IS 1.
+   WAIT UNTIL (shipTWR() < cutOffTWR).
    PRINT " ".
    PRINT "Staging.".
    STAGE.
@@ -131,4 +157,9 @@ FUNCTION deployPayload {
    STAGE.
    PRINT " ".
    PRINT "Deploying Payload...".
+}
+
+   //Returns ship TWR 
+FUNCTION shipTWR {
+   RETURN AVAILABLETHRUST / (MASS*CONSTANT:g0).
 }

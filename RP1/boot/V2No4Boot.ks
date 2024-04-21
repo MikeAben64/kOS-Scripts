@@ -1,5 +1,5 @@
 // Title: V2No4Boot
-// Description: Boot file for V2 No.3 mission.
+// Description: Low Space Planetary Photography.
 
 IF (STATUS = "PRELAUNCH") {
    CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
@@ -7,6 +7,6 @@ IF (STATUS = "PRELAUNCH") {
    LIGHTS ON.
    PRINT "Volume switched to archive.".
    PRINT " ".
-   PRINT "RUN v2no_4(315, 30000) when ready.".
+   PRINT "RUN v2no_4(5, 30000) when ready.".
    PRINT " ".
 }
