@@ -1,10 +1,12 @@
+ //****************************************************
+ // GLOBAL FUNCTIONS
+ //**************************************************** 
 
     // Executes a maneuver node
 GLOBAL FUNCTION exeMan {
    IF HASNODE {
       CLEARSCREEN.
       SAS OFF.
-
          // holds data regarding maneuver node
       SET mNode to NEXTNODE.
          // makes sure there are active engines
@@ -62,6 +64,10 @@ GLOBAL FUNCTION align {
    SAS ON.
 }
 
+ //****************************************************
+ // HELPER FUNCTIONS
+ //**************************************************** 
+
    // calculates the start time of the burn
 FUNCTION calculateStartTime {
    RETURN TIME:SECONDS + mNode:ETA - burnTime() / 2.
@@ -86,7 +92,6 @@ FUNCTION burnTime {
    SET finalMass to MASS / (CONSTANT:E^(delV/(currentISP()*CONSTANT:g0))).
       // checking to make sure engines haven't flamed out
    IF (AVAILABLETHRUST > 0) {
-      //SET bTime to 2*delV / (startAcc+finalAcc).
       SET bTime to delV*(MASS - finalMass) / AVAILABLETHRUST / LN(MASS/finalMass).
    } 
    RETURN bTime.        
@@ -127,14 +132,16 @@ FUNCTION startBurn {
    WAIT 1.
    PRINT "1".
    WAIT 1.
-   PRINT "Locking throttle to full.".
+   PRINT "Engage.".
 
-   SET throttleSet to MIN(mNode:DELTAV:MAG / maxAcc, 1).
+   UNTIL maneuverComplete() {
+      SET throttleSet to MAX(MIN(mNode:DELTAV:MAG / maxAcc, 1), 0.1).
+      WAIT 0.
+   }
 }
 
    // kills throttle when burn is complete
 FUNCTION endBurn {
-   WAIT UNTIL maneuverComplete().
    PRINT " ".
    PRINT "Burn Complete.".
    PRINT " ".

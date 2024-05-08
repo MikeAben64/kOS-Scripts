@@ -1,6 +1,10 @@
 
-   // Performs 5 minute countdown, setting throttle and steering
-   // then releases rocket
+ //****************************************************
+ // GLOBAL FUNCTIONS
+ //****************************************************  
+   
+   // Performs 5 minute countdown, setting throttle
+   // and steering then releases rocket
 GLOBAL FUNCTION countdown {
    // Countdown beeps
    SET voice to getVoice(0).
@@ -33,7 +37,7 @@ GLOBAL FUNCTION countdown {
    STAGE.
    PRINT "LAUNCH!".
    voice:PLAY(voiceTakeOffNote).  
-   //STAGE.
+   // STAGE. <= Commented out in case of engine failures
    WAIT 2.
 }
 
@@ -56,17 +60,50 @@ GLOBAL FUNCTION gravityTurn {
    PARAMETER lockingAlt IS 20000.
    PARAMETER desiredApoapsis IS 80000.
 
+   SET srfProLocked to FALSE.
    SET proLocked to FALSE.
+   SET throttleMin to FALSE.
+   SET msgPrinted to FALSE.
+   SET thrustSetting to 1.
+   SET targetETA to 55.
 
-   UNTIL (APOAPSIS > desiredApoapsis) {     
-      IF (ALTITUDE > lockingAlt) AND NOT proLocked {
+   SET throttlePID to PIDLOOP(1.02, 0.5, 0.03, 0, 1).
+   SET throttlePID:SETPOINT to targetETA.
+
+   LOCK THROTTLE to thrustSetting.
+
+   UNTIL (APOAPSIS > desiredApoapsis) {    
+         //Locks to surface prograde vector 
+      IF (ALTITUDE > lockingAlt) AND NOT srfProLocked {
+         lockToSrfPrograde(desiredHeading).
+         SET srfProLocked to TRUE.
+      }
+         //Locks to orbital prograde vector
+      IF (ALTITUDE > 50000) AND NOT proLocked {
          lockToPrograde(desiredHeading).
-         SET proLocked to TRUE.
+         set proLocked to TRUE.
       }
       WAIT 0.
+         //Moderates thrust to keep time to apo at 55 seconds
+      IF NOT throttleMin AND ETA:APOAPSIS > (targetETA - 5) {
+         SET thrustSetting to throttlePID:UPDATE(TIME:SECONDS, ETA:APOAPSIS).
+         IF thrustSetting < .95 AND NOT msgPrinted {
+            PRINT " ".
+            PRINT "Reducing Throttle.".
+            SET msgPrinted to TRUE.
+         }
+         IF thrustSetting < 0.2 {
+            SET thrustSetting to 0.2.
+            SET throttleMin to TRUE.
+         }
+      }
    }
    meco().
 }  
+
+ //****************************************************
+ // HELPER FUNCTIONS
+ //**************************************************** 
 
    // Returns appropriate roll for craft.
 FUNCTION myRoll {
@@ -87,14 +124,31 @@ FUNCTION myPitch {
 }
 
    //Locks craft to the surface prograde vector
-FUNCTION lockToPrograde {
+FUNCTION lockToSrfPrograde {
    PARAMETER desiredHeading.
-   PRINT "Locking to prograde.".
+   PRINT " ".
+   PRINT "Locking to surface prograde vector.".
    LOCK STEERING to SRFPROGRADE + R(0, 0, myRoll(desiredHeading)).
 }
 
+   //Locks craft to the orbital prograde vector
+FUNCTION lockToPrograde {
+   PARAMETER desiredHeading.
+   PRINT " ".
+   PRINT "Locking to orbital prograde vector.".
+   LOCK STEERING to PROGRADE + R(0, 0, myRoll(desiredHeading)).
+}
+
+   // Cuts engines
 FUNCTION meco {
    LOCK THROTTLE to 0.
    PRINT " ".
    PRINT "Engine Cut-off.".
+}
+
+   //Returns ship TWR ***WORK IN PROGRESS***
+FUNCTION shipTWR {
+      // Current thrust setting.
+   SET thrustSetting to 1.
+   RETURN AVAILABLETHRUST*thrustSetting / (MASS*CONSTANT:g0).
 }
