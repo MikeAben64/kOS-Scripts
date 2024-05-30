@@ -10,6 +10,7 @@ GLOBAL FUNCTION countdown {
    SET voice to getVoice(0).
    SET voiceTickNote to NOTE(480, 0.1).
    SET voiceTakeOffNote to NOTE(720, 0.5).
+   SET scrubbed to FALSE.
 
    SAS OFF.
    PRINT "5".
@@ -33,11 +34,21 @@ GLOBAL FUNCTION countdown {
    PRINT "1".
    voice:PLAY(voiceTickNote).
    PRINT "IGNITION".
-   WAIT 1. 
    STAGE.
-   PRINT "LAUNCH!".
-   voice:PLAY(voiceTakeOffNote).  
-   // STAGE. <= Commented out in case of engine failures
+   WAIT 1. 
+   IF shipTWR < 1 {
+      PRINT " ".
+      PRINT "Subnominal thrust detected.".
+      WAIT 1.
+      PRINT "Scrub launch.".
+      PRINT " ".
+      SET scrubbed to TRUE.
+   }
+   IF NOT scrubbed {
+      PRINT "LAUNCH!".
+      voice:PLAY(voiceTakeOffNote).  
+      STAGE.
+   }
    WAIT 2.
 }
 
@@ -58,12 +69,14 @@ GLOBAL FUNCTION pitchManuever {
 GLOBAL FUNCTION gravityTurn {
    PARAMETER desiredHeading IS 90.
    PARAMETER lockingAlt IS 20000.
+   PARAMETER fairingDeployAlt IS 50000.
    PARAMETER desiredApoapsis IS 80000.
 
    SET srfProLocked to FALSE.
    SET proLocked to FALSE.
    SET throttleMin to FALSE.
    SET msgPrinted to FALSE.
+ 
    SET thrustSetting to 1.
    SET targetETA to 55.
 
@@ -77,25 +90,33 @@ GLOBAL FUNCTION gravityTurn {
       IF (ALTITUDE > lockingAlt) AND NOT srfProLocked {
          lockToSrfPrograde(desiredHeading).
          SET srfProLocked to TRUE.
-      }
+         }
          //Locks to orbital prograde vector
-      IF (ALTITUDE > 50000) AND NOT proLocked {
+      IF (ALTITUDE > fairingDeployAlt) AND NOT proLocked {
          lockToPrograde(desiredHeading).
-         set proLocked to TRUE.
+         SET proLocked to TRUE.
       }
       WAIT 0.
-         //Moderates thrust to keep time to apo at 55 seconds
-      IF NOT throttleMin AND ETA:APOAPSIS > (targetETA - 5) {
+        // Moderates thrust to keep time to apo at 55 seconds
+      IF NOT throttleMin AND ETA:APOAPSIS > (targetETA - 1) {
          SET thrustSetting to throttlePID:UPDATE(TIME:SECONDS, ETA:APOAPSIS).
          IF thrustSetting < .95 AND NOT msgPrinted {
             PRINT " ".
             PRINT "Reducing Throttle.".
             SET msgPrinted to TRUE.
          }
-         IF thrustSetting < 0.2 {
-            SET thrustSetting to 0.2.
+      }
+      IF thrustSetting < 0.4 {
+            SET thrustSetting to 0.4.
             SET throttleMin to TRUE.
-         }
+      }
+         // Resets if time to APO drops too low
+      IF (ETA:APOAPSIS < (targetETA - 2)) AND throttleMin {
+            PRINT " ".
+            PRINT "Increasing Throttle.".
+            SET thrustSetting to 1.
+            SET msgPrinted to FALSE.
+            SET throttleMin to FALSE.
       }
    }
    meco().
@@ -137,6 +158,7 @@ FUNCTION lockToPrograde {
    PRINT " ".
    PRINT "Locking to orbital prograde vector.".
    LOCK STEERING to PROGRADE + R(0, 0, myRoll(desiredHeading)).
+   AG5 ON.
 }
 
    // Cuts engines
