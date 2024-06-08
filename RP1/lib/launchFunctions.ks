@@ -37,6 +37,8 @@ GLOBAL FUNCTION simpleCountdown {
 GLOBAL FUNCTION countdown {
    PARAMETER mechJeb IS TRUE.
    PARAMETER spoolUp IS 2.5.
+
+   SET scrubbed to FALSE.
    
    SAS OFF.
    PRINT "5".
@@ -64,14 +66,24 @@ GLOBAL FUNCTION countdown {
    PRINT "IGNITION". 
    STAGE.
    WAIT spoolUp.
-   PRINT "LAUNCH!".
-   voice:PLAY(voiceTakeOffNote).  
-   STAGE.
-   WAIT 2.
-   IF (mechJeb) {
-      UNLOCK STEERING.
+   IF shipTWR < 1 {
       PRINT " ".
-      PRINT "Passing attitude control to MechJeb.".
+      PRINT "Subnominal thrust detected.".
+      WAIT 1.
+      PRINT "Scrub launch.".
+      PRINT " ".
+      SET scrubbed to TRUE.
+   }
+   IF NOT scrubbed {
+      PRINT "LAUNCH!".
+      voice:PLAY(voiceTakeOffNote).  
+      STAGE.
+      WAIT 2.
+      IF (mechJeb) {
+         UNLOCK STEERING.
+         PRINT " ".
+         PRINT "Passing attitude control to MechJeb.".
+      }
    }
 }
 
@@ -99,7 +111,7 @@ GLOBAL FUNCTION gravityTurn {
    }
 } 
 
-   //Staging Aerobee Rocket
+   //Stage rocket upon loss of thrust
 GLOBAL FUNCTION autoStage {
    PARAMETER cutOffTWR IS 1.
    WAIT UNTIL (shipTWR() < cutOffTWR).
