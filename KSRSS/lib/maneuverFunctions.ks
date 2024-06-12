@@ -18,9 +18,11 @@ GLOBAL FUNCTION exeMan {
          // start time of burn
       SET startTime to calculateStartTime().
          // start direction of burn
-      SET startVector to mNode:BURNVECTOR.
+      SET startV to mNode:BURNVECTOR.
+      PRINT " ".
+      PRINT "Time to Burn: " + timeToBurn().
       lockSteering().
-      startBurn().
+      startBurn(startV).
       endBurn().
          // if no node in path, program ends
    } ELSE {
@@ -73,6 +75,20 @@ FUNCTION calculateStartTime {
    RETURN TIME:SECONDS + mNode:ETA - burnTime() / 2.
 }
 
+FUNCTION timeToBurn {
+   SET timeSec to mNode:ETA - burnTime() / 2.
+   SET timeString to "".
+   IF timeSec > 3600 {
+      SET timeString to timeString + FLOOR(timeSec/3600) + ":".
+      SET timeSec to timeSec - FLOOR(timeSec/3600)*3600.
+   }
+   IF timeSec > 60 {
+      SET timeString to timeString + FLOOR(timeSec/60) + ":".
+      SET timeSec to timeSec - FLOOR(timeSec/60)*60.
+   }
+   RETURN timeString + FLOOR(timeSec).
+}
+
    // locks attitude to the burn vector
 FUNCTION lockSteering {
    LOCK STEERING to mNode:BURNVECTOR.
@@ -82,6 +98,7 @@ FUNCTION lockSteering {
 
    // maneuver ends when burn vector deviates by more than 3.5 degrees
 FUNCTION maneuverComplete {
+   PARAMETER startVector.
    RETURN VANG(startVector, mNode:BURNVECTOR) > 3.5.
 }
 
@@ -118,6 +135,8 @@ FUNCTION currentISP {
 
    // starts the burn
 FUNCTION startBurn {
+   PARAMETER startVec.
+
    SET maxAcc to SHIP:MAXTHRUST / SHIP:MASS.
    SET throttleSet to 0.
    LOCK THROTTLE to throttleSet.
@@ -134,7 +153,7 @@ FUNCTION startBurn {
    WAIT 1.
    PRINT "Engage.".
 
-   UNTIL maneuverComplete() {
+   UNTIL maneuverComplete(startVec) {
       SET throttleSet to MAX(MIN(mNode:DELTAV:MAG / maxAcc, 1), 0.1).
       WAIT 0.
    }

@@ -36,7 +36,7 @@ GLOBAL FUNCTION countdown {
    PRINT "IGNITION".
    STAGE.
    WAIT 1. 
-   IF shipTWR < 1 {
+   IF shipTWR < 1.2 {
       PRINT " ".
       PRINT "Subnominal thrust detected.".
       WAIT 1.
