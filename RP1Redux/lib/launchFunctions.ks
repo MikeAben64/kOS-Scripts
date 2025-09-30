@@ -179,6 +179,9 @@ FUNCTION lockToPrograde {
 FUNCTION deployPayload {
    PARAMETER deployingAlt IS 80000.
    WAIT UNTIL ALTITUDE < deployingAlt AND VERTICALSPEED < 0.
+   WAIT 0.
+   STAGE.
+   WAIT 0.
    STAGE.
    PRINT " ".
    PRINT "Deploying Payload...".
