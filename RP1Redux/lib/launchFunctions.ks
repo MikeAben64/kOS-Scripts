@@ -145,6 +145,19 @@ GLOBAL FUNCTION rangeAbort {
    ABORT ON.
    WAIT 0.
 }
+
+   // Deploys payload
+GLOBAL FUNCTION deployPayload {
+   PARAMETER deployingAlt IS 80000.
+   WAIT UNTIL ALTITUDE < deployingAlt AND VERTICALSPEED < 0.
+   WAIT 1.
+   STAGE.
+   WAIT 1.
+   STAGE.
+   PRINT " ".
+   PRINT "Deploying Payload...".
+}
+
 // *****************************************
 // HELPER FUNCTIONS
 // *****************************************
@@ -173,18 +186,6 @@ FUNCTION lockToPrograde {
    PRINT "Locking to prograde.".
    LOCK STEERING to SRFPROGRADE + R(0, 0, myRoll(desiredHeading)).
    SET proLocked to TRUE.
-}
-
-   // Deploys payload
-FUNCTION deployPayload {
-   PARAMETER deployingAlt IS 80000.
-   WAIT UNTIL ALTITUDE < deployingAlt AND VERTICALSPEED < 0.
-   WAIT 0.
-   STAGE.
-   WAIT 0.
-   STAGE.
-   PRINT " ".
-   PRINT "Deploying Payload...".
 }
 
    //Returns ship TWR 

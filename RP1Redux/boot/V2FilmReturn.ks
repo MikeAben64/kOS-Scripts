@@ -4,10 +4,11 @@ IF (STATUS = "PRELAUNCH") {
    CD ("0:/NewStart").
 
    PRINT "SETTINGS:".
-   PRINT "  Apo: 110km".
-   PRINT "  Per: 0".
+   PRINT "  Per: -6200km".
+   PRINT "  Apo: 180km".
    PRINT "  Turn off autostage.".
    PRINT " ".
    PRINT "ENGAGE MECHJEB.".
+   PRINT " ".
    PRINT "RUN downrange when ready.".
 }
