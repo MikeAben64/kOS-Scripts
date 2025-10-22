@@ -5,10 +5,10 @@ IF (STATUS = "PRELAUNCH") {
 
    PRINT "SETTINGS:".
    PRINT "  Per: -6200km".
-   PRINT "  Apo: 180km".
-   PRINT "  Turn off autostage.".
+   PRINT "  Apo: 250km".
+   PRINT "  inc: 110".
    PRINT " ".
    PRINT "ENGAGE MECHJEB.".
    PRINT " ".
-   PRINT "RUN downrange when ready.".
+   PRINT "RUN downrange(true, false) when ready.".
 }
