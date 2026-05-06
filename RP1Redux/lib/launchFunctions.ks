@@ -38,9 +38,6 @@ GLOBAL FUNCTION simpleCountdown {
 
 GLOBAL FUNCTION countdown {
    PARAMETER mechJeb IS TRUE.
-   PARAMETER spoolUp IS 2.5.
-
-   SET scrubbed to FALSE.
    
    SAS OFF.
    PRINT "5".
@@ -52,8 +49,8 @@ GLOBAL FUNCTION countdown {
    PRINT "3".
    voice:PLAY(voiceTickNote).
    WAIT 0.5.
-   LOCK STEERING to UP + R(0, 0, 180).
-   PRINT "Locking attitude control.".
+   //LOCK STEERING to UP + R(0, 0, 180).
+   //PRINT "Locking attitude control.".
    WAIT 0.5. 
    PRINT "2".
    voice:PLAY(voiceTickNote).
@@ -66,27 +63,7 @@ GLOBAL FUNCTION countdown {
    PRINT "1".
    voice:PLAY(voiceTickNote).
    PRINT "IGNITION". 
-   STAGE.
-   WAIT spoolUp.
-   IF shipTWR < 1 {
-      PRINT " ".
-      PRINT "Subnominal thrust detected.".
-      WAIT 1.
-      PRINT "Scrub launch.".
-      PRINT " ".
-      SET scrubbed to TRUE.
-   }
-   IF NOT scrubbed {
-      PRINT "LAUNCH!".
-      voice:PLAY(voiceTakeOffNote).  
-      STAGE.
-      WAIT 2.
-      IF (mechJeb) {
-         UNLOCK STEERING.
-         PRINT " ".
-         PRINT "Passing attitude control to MechJeb.".
-      }
-   }
+   STAGE.   
 }
 
    //PITCHING MANEUVER
@@ -119,6 +96,7 @@ GLOBAL FUNCTION autoStage {
    WAIT UNTIL (shipTWR() < cutOffTWR).
    PRINT " ".
    PRINT "Staging.".
+   WAIT UNTIL STAGE:READY.
    STAGE.
 }
 
@@ -159,6 +137,11 @@ GLOBAL FUNCTION deployPayload {
    PRINT "Deploying Payload...".
 }
 
+   //Returns ship TWR 
+GLOBAL FUNCTION shipTWR {
+   RETURN AVAILABLETHRUST / (MASS*CONSTANT:g0).
+}
+
 // *****************************************
 // HELPER FUNCTIONS
 // *****************************************
@@ -189,7 +172,4 @@ FUNCTION lockToPrograde {
    SET proLocked to TRUE.
 }
 
-   //Returns ship TWR 
-FUNCTION shipTWR {
-   RETURN AVAILABLETHRUST / (MASS*CONSTANT:g0).
-}
+
